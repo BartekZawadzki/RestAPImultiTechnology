@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Produkty</title>
+    <script>
+        window.onload = function() {
+            loadProducts();
+        };
+
+        async function loadProducts() {
+            const response = await fetch('/products');
+            const products = await response.json();
+            const productList = document.getElementById('lista-produktow');
+            productList.innerHTML = '';
+
+            products.forEach(product => {
+                const productItem = `
+                    <li>
+                        <strong>Nazwa:</strong> ${product.name}<br>
+                        <strong>Cena:</strong> ${product.price}<br>
+                        <strong>Opis:</strong> ${product.description}<br>
+                        <strong>URL obrazka:</strong> <a href="${product.image_url}">${product.image_url}</a><br>
+                        <button onclick="deleteProduct(${product.id})">Usuń</button>
+                        <button onclick="updateProduct(${product.id})">Aktualizuj</button>
+                    </li>
+                    <hr>
+                `;
+                productList.innerHTML += productItem;
+            });
+        }
+
+        async function addProduct() {
+            const name = document.getElementById('nowa-nazwa').value;
+            const price = document.getElementById('nowa-cena').value;
+            const description = document.getElementById('nowy-opis').value;
+            let image_url = document.getElementById('nowy-url-obrazka').value;
+
+           
+            if (!image_url) {
+                image_url = 'brak';
+            }
+
+            const response = await fetch('/products', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, price, description, image_url })
+            });
+
+            if (response.ok) {
+                alert('Produkt dodany pomyślnie!');
+                document.getElementById('nowa-nazwa').value = '';
+                document.getElementById('nowa-cena').value = '';
+                document.getElementById('nowy-opis').value = '';
+                document.getElementById('nowy-url-obrazka').value = '';
+                loadProducts();
+            } else {
+                alert('Błąd podczas dodawania produktu.');
+            }
+        }
+
+        async function deleteProduct(id) {
+            const response = await fetch(`/products/${id}`, { method: 'DELETE' });
+            if (response.ok) {
+                alert('Produkt usunięty!');
+                loadProducts();
+            } else {
+                alert('Błąd podczas usuwania produktu.');
+            }
+        }
+
+        async function updateProduct(id) {
+            const name = prompt('Podaj nową nazwę produktu:');
+            const price = prompt('Podaj nową cenę produktu:');
+            const description = prompt('Podaj nowy opis produktu:');
+            let image_url = prompt('Podaj nowy URL obrazka produktu (wpisz "brak", jeśli nie chcesz podawać):');
+
+           
+            if (!image_url) {
+                image_url = 'brak';
+            }
+
+            const response = await fetch(`/products/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, price, description, image_url })
+            });
+
+            if (response.ok) {
+                alert('Produkt zaktualizowany!');
+                loadProducts();
+            } else {
+                alert('Błąd podczas aktualizacji produktu.');
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Lista produktów</h1>
+    <ul id="lista-produktow"></ul>
+
+    <h2>Dodaj nowy produkt</h2>
+    <form onsubmit="event.preventDefault(); addProduct();">
+        <label for="nowa-nazwa">Nazwa:</label><br>
+        <input type="text" id="nowa-nazwa" required><br><br>
+
+        <label for="nowa-cena">Cena:</label><br>
+        <input type="number" id="nowa-cena" required><br><br>
+
+        <label for="nowy-opis">Opis:</label><br>
+        <input type="text" id="nowy-opis" required><br><br>
+
+        <label for="nowy-url-obrazka">URL obrazka:</label><br>
+        <input type="text" id="nowy-url-obrazka"><br><br>
+
+        <button type="submit">Dodaj produkt</button>
+    </form>
+</body>
+</html>

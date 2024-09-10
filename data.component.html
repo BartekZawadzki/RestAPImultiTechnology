@@ -1,0 +1,50 @@
+<div *ngIf="products.length > 0; else noData">
+  <ul>
+    <li *ngFor="let product of products">
+      <h3>{{ product.name }}</h3>
+      <p>{{ product.description }}</p>
+      <img [src]="product.image_url" alt="{{ product.name }}">
+      <p>Cena: {{ product.price }} PLN</p>
+      <button (click)="updateProduct(product.id, { name: product.name, price: product.price + 100 })">Aktualizuj</button>
+      <button (click)="deleteProduct(product.id)">Usuń</button>
+    </li>
+  </ul>
+</div>
+
+<ng-template #noData>
+  <p>Brak produktów do wyświetlenia.</p>
+</ng-template>
+
+
+<div>
+  <h3>Dodaj nowy produkt:</h3>
+  <form #productForm="ngForm" (submit)="addProduct()" novalidate>
+   
+    <input [(ngModel)]="newName" name="name" required minlength="3" placeholder="Nazwa" #name="ngModel">
+    <div *ngIf="name.invalid && name.touched">
+      <small *ngIf="name.errors?.required">Nazwa jest wymagana.</small>
+      <small *ngIf="name.errors?.minlength">Nazwa musi mieć przynajmniej 3 znaki.</small>
+    </div>
+
+   
+    <input [(ngModel)]="newPrice" name="price" required type="number" min="1" placeholder="Cena" #price="ngModel">
+    <div *ngIf="price.invalid && price.touched">
+      <small *ngIf="price.errors?.required">Cena jest wymagana.</small>
+      <small *ngIf="price.errors?.min">Cena musi być liczbą większą od 0.</small>
+    </div>
+
+   
+    <input [(ngModel)]="newDescription" name="description" required placeholder="Opis" #description="ngModel">
+    <div *ngIf="description.invalid && description.touched">
+      <small *ngIf="description.errors?.required">Opis jest wymagany.</small>
+    </div>
+
+   
+    <input [(ngModel)]="newImageUrl" name="image_url" placeholder="URL obrazka" pattern="(brak|https?://.+)" #image_url="ngModel">
+    <div *ngIf="image_url.invalid && image_url.touched">
+      <small *ngIf="image_url.errors?.pattern">URL obrazka musi być poprawnym adresem URL lub wartością "brak".</small>
+    </div>
+
+    <button type="submit" [disabled]="productForm.invalid">Dodaj produkt</button>
+  </form>
+</div>
